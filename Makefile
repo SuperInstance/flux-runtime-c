@@ -34,3 +34,9 @@ clean:
 	rm -f flux-runtime flux-asm test_vm test_memory test_asm src/*.o
 
 .PHONY: all test clean
+
+isa_v2: src/isa_v2.c src/isa_v2.h
+	gcc -Wall -O2 -o test_isa_v2 tests/test_isa_v2.c src/isa_v2.c -I src
+
+test_isa_v2: isa_v2
+	./test_isa_v2
