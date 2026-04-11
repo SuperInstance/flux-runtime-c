@@ -40,3 +40,10 @@ isa_v2: src/isa_v2.c src/isa_v2.h
 
 test_isa_v2: isa_v2
 	./test_isa_v2
+
+# Unified VM (FORMAT_A-G)
+flux_vm: src/flux_vm.h src/flux_vm.c tests/test_flux_vm.c
+	$(CC) -o test_flux_vm tests/test_flux_vm.c src/flux_vm.c -lm -Wall
+
+test_flux_vm: flux_vm
+	timeout 5 ./test_flux_vm
