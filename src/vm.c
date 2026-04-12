@@ -108,10 +108,10 @@ int64_t flux_vm_execute(FluxVM* v) {
         case FLUX_RET: rd=f8(v); if(!v->frame_count) ERR(5); v->regs.pc=v->frame_stack[--v->frame_count]; break;
         case FLUX_LOOP: rd=gr8(v); rs1=gr8(v); GPR[rd]+=GPR[rs1]; break;
 
-        case FLUX_JAL: rd=gr8(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.pc; v->regs.pc=(uint32_t)GPR[rd]; break;
-        case FLUX_TAILCALL: rd=gr8(v); v->regs.pc=(uint32_t)GPR[rd]; break;
-        case FLUX_MOVI: rd=gr8(v); imm=fi16(v); GPR[rd]=imm; break;
-        case FLUX_ADDI: rd=gr8(v); imm=fi16(v); { int32_t r=GPR[rd]+imm; sf(v,r); GPR[rd]=r; } break;
+        case FLUX_JAL: rd=f8(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.pc; v->regs.pc=(uint32_t)GPR[rd]; break;
+        case FLUX_TAILCALL: rd=f8(v); v->regs.pc=(uint32_t)GPR[rd]; break;
+        case FLUX_MOVI: rd=f8(v); imm=fi16(v); GPR[rd]=imm; break;
+        case FLUX_ADDI: rd=f8(v); imm=fi16(v); { int32_t r=GPR[rd]+imm; sf(v,r); GPR[rd]=r; } break;
 
         case FLUX_SWAP: { FluxMemRegion* s=flux_mem_get(&v->mem,"stack"); if(s){int32_t a=flux_mem_read_i32(s,v->regs.sp),b=flux_mem_read_i32(s,v->regs.sp+4); flux_mem_write_i32(s,v->regs.sp,b); flux_mem_write_i32(s,v->regs.sp+4,a);} } break;
         case FLUX_TEST: rd=gr8(v); rs1=gr8(v); sf(v,GPR[rd]&GPR[rs1]); break;

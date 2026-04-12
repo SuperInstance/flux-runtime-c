@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-std=c11 -Wall -Wextra -O2 -Iinclude
 OBJS=src/opcodes.o src/registers.o src/memory.o src/vm.o
 
-all: flux-runtime flux-asm test_vm test_memory test_asm
+all: flux-runtime flux-asm test_vm test_memory test_asm test_float test_extended test_regions
 
 flux-runtime: src/main.c $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -19,19 +19,34 @@ test_memory: tests/test_memory.c $(OBJS)
 test_asm: tests/test_asm.c $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
+test_float: tests/test_float.c $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+test_extended: tests/test_extended.c $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+test_regions: tests/test_regions.c $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-test: test_vm test_memory test_asm
+test: test_vm test_memory test_asm test_float test_extended test_regions
 	@echo "--- VM Tests ---"
 	@./test_vm
 	@echo "--- Memory Tests ---"
 	@./test_memory
 	@echo "--- Assembler Tests ---"
 	@./test_asm
+	@echo "--- Float Tests ---"
+	@./test_float
+	@echo "--- Extended Tests ---"
+	@./test_extended
+	@echo "--- Region Tests ---"
+	@./test_regions
 
 clean:
-	rm -f flux-runtime flux-asm test_vm test_memory test_asm src/*.o
+	rm -f flux-runtime flux-asm test_vm test_memory test_asm test_float test_extended test_regions src/*.o
 
 .PHONY: all test clean
 
