@@ -40,19 +40,19 @@ static int32_t run_bytecode_r4(const uint8_t* bc, uint32_t len) {
 
 TEST(test_movi_halt) {
     /* MOVI R0, 42; HALT */
-    uint8_t bc[] = { 0x2B, 0x00, 0x2A, 0x00, 0x80 };
+    uint8_t bc[] = { 0x18, 0x00, 0x2A, 0x00, 0x00 };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 42, "R0 should be 42");
     PASS;
 }
 
 TEST(test_addition) {
-    /* MOVI R0, 10; MOVI R1, 20; IADD R0, R1; HALT */
+    /* MOVI R0, 10; MOVI R1, 20; ADD R0, R1; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x0A, 0x00,  /* MOVI R0, 10 */
-        0x2B, 0x01, 0x14, 0x00,  /* MOVI R1, 20 */
-        0x08, 0x00, 0x01,        /* IADD R0, R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x0A, 0x00,  /* MOVI R0, 10 */
+        0x18, 0x01, 0x14, 0x00,  /* MOVI R1, 20 */
+        0x20, 0x00, 0x01,        /* ADD R0, R1 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 30, "R0 should be 30");
@@ -60,12 +60,12 @@ TEST(test_addition) {
 }
 
 TEST(test_multiplication) {
-    /* MOVI R0, 6; MOVI R1, 7; IMUL R0, R1; HALT */
+    /* MOVI R0, 6; MOVI R1, 7; MUL R0, R1; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x06, 0x00,  /* MOVI R0, 6 */
-        0x2B, 0x01, 0x07, 0x00,  /* MOVI R1, 7 */
-        0x0A, 0x00, 0x01,        /* IMUL R0, R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x06, 0x00,  /* MOVI R0, 6 */
+        0x18, 0x01, 0x07, 0x00,  /* MOVI R1, 7 */
+        0x22, 0x00, 0x01,        /* MUL R0, R1 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 42, "R0 should be 42");
@@ -73,12 +73,12 @@ TEST(test_multiplication) {
 }
 
 TEST(test_subtraction) {
-    /* MOVI R0, 100; MOVI R1, 37; ISUB R0, R1; HALT */
+    /* MOVI R0, 100; MOVI R1, 37; SUB R0, R1; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x64, 0x00,  /* MOVI R0, 100 */
-        0x2B, 0x01, 0x25, 0x00,  /* MOVI R1, 37 */
-        0x09, 0x00, 0x01,        /* ISUB R0, R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x64, 0x00,  /* MOVI R0, 100 */
+        0x18, 0x01, 0x25, 0x00,  /* MOVI R1, 37 */
+        0x21, 0x00, 0x01,        /* SUB R0, R1 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 63, "R0 should be 63");
@@ -86,12 +86,12 @@ TEST(test_subtraction) {
 }
 
 TEST(test_division) {
-    /* MOVI R0, 100; MOVI R1, 7; IDIV R0, R1; HALT */
+    /* MOVI R0, 100; MOVI R1, 7; DIV R0, R1; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x64, 0x00,  /* MOVI R0, 100 */
-        0x2B, 0x01, 0x07, 0x00,  /* MOVI R1, 7 */
-        0x0B, 0x00, 0x01,        /* IDIV R0, R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x64, 0x00,  /* MOVI R0, 100 */
+        0x18, 0x01, 0x07, 0x00,  /* MOVI R1, 7 */
+        0x23, 0x00, 0x01,        /* DIV R0, R1 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 14, "R0 should be 14 (100/7)");
@@ -101,11 +101,11 @@ TEST(test_division) {
 TEST(test_inc_dec) {
     /* MOVI R0, 10; INC R0; INC R0; DEC R0; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x0A, 0x00,  /* MOVI R0, 10 */
-        0x0E, 0x00,              /* INC R0 */
-        0x0E, 0x00,              /* INC R0 */
-        0x0F, 0x00,              /* DEC R0 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x0A, 0x00,  /* MOVI R0, 10 */
+        0x08, 0x00,              /* INC R0 */
+        0x08, 0x00,              /* INC R0 */
+        0x09, 0x00,              /* DEC R0 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 11, "R0 should be 11");
@@ -117,21 +117,21 @@ TEST(test_loop_sum_1_to_10) {
        MOVI R0, 0     ; accumulator
        MOVI R1, 10    ; counter
        loop:
-       IADD R0, R1    ; acc += counter
+       ADD R0, R1     ; acc += counter
        DEC R1         ; counter--
        JNZ R1, loop   ; if counter != 0, loop
        HALT
     */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
-        0x2B, 0x01, 0x0A, 0x00,  /* MOVI R1, 10 */
+        0x18, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
+        0x18, 0x01, 0x0A, 0x00,  /* MOVI R1, 10 */
         /* loop: offset 8 */
-        0x08, 0x00, 0x01,        /* IADD R0, R1 */
-        0x0F, 0x01,              /* DEC R1 */
+        0x20, 0x00, 0x01,        /* ADD R0, R1 */
+        0x09, 0x01,              /* DEC R1 */
         /* JNZ at offset 13: needs to jump back to offset 8 */
         /* JNZ is 4 bytes, ends at offset 17. Target=8, offset = 8-17 = -9 */
-        0x06, 0x01, 0xF7, 0xFF,  /* JNZ R1, -9 */
-        0x80                     /* HALT at offset 17 */
+        0x3D, 0x01, 0xF7, 0xFF,  /* JNZ R1, -9 */
+        0x00                     /* HALT at offset 17 */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 55, "R0 should be 55 (sum 1..10)");
@@ -143,20 +143,20 @@ TEST(test_factorial_5) {
        MOVI R3, 5
        MOVI R4, 1
        loop:
-       IMUL R4, R3
+       MUL R4, R3
        DEC R3
        JNZ R3, loop
        HALT
     */
     uint8_t bc[] = {
-        0x2B, 0x03, 0x05, 0x00,  /* MOVI R3, 5 */
-        0x2B, 0x04, 0x01, 0x00,  /* MOVI R4, 1 */
+        0x18, 0x03, 0x05, 0x00,  /* MOVI R3, 5 */
+        0x18, 0x04, 0x01, 0x00,  /* MOVI R4, 1 */
         /* loop: offset 8 */
-        0x0A, 0x04, 0x03,        /* IMUL R4, R3 */
-        0x0F, 0x03,              /* DEC R3 */
+        0x22, 0x04, 0x03,        /* MUL R4, R3 */
+        0x09, 0x03,              /* DEC R3 */
         /* JNZ at offset 13: target=8, end=17, offset = 8-17 = -9 */
-        0x06, 0x03, 0xF7, 0xFF,  /* JNZ R3, -9 */
-        0x80                     /* HALT at offset 17 */
+        0x3D, 0x03, 0xF7, 0xFF,  /* JNZ R3, -9 */
+        0x00                     /* HALT at offset 17 */
     };
     int32_t r4 = run_bytecode_r4(bc, sizeof(bc));
     ASSERT_EQ(r4, 120, "R4 should be 120 (5!)");
@@ -178,19 +178,19 @@ TEST(test_nested_loop_3x4) {
        HALT
     */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
-        0x2B, 0x01, 0x03, 0x00,  /* MOVI R1, 3 */
+        0x18, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
+        0x18, 0x01, 0x03, 0x00,  /* MOVI R1, 3 */
         /* outer: offset 8 */
-        0x2B, 0x02, 0x04, 0x00,  /* MOVI R2, 4 */
+        0x18, 0x02, 0x04, 0x00,  /* MOVI R2, 4 */
         /* inner: offset 12 */
-        0x0E, 0x00,              /* INC R0 */
-        0x0F, 0x02,              /* DEC R2 */
+        0x08, 0x00,              /* INC R0 */
+        0x09, 0x02,              /* DEC R2 */
         /* JNZ at 16: target=12, end=20, offset = 12-20 = -8 */
-        0x06, 0x02, 0xF8, 0xFF,  /* JNZ R2, -8 */
-        0x0F, 0x01,              /* DEC R1 */
+        0x3D, 0x02, 0xF8, 0xFF,  /* JNZ R2, -8 */
+        0x09, 0x01,              /* DEC R1 */
         /* JNZ at 22: target=8, end=26, offset = 8-26 = -18 */
-        0x06, 0x01, 0xEE, 0xFF,  /* JNZ R1, -18 */
-        0x80                     /* HALT at offset 26 */
+        0x3D, 0x01, 0xEE, 0xFF,  /* JNZ R1, -18 */
+        0x00                     /* HALT at offset 26 */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 12, "R0 should be 12 (3*4 via nested loops)");
@@ -198,12 +198,12 @@ TEST(test_nested_loop_3x4) {
 }
 
 TEST(test_negative_immediate) {
-    /* MOVI R0, -5; MOVI R1, 10; IADD R0, R1; HALT → R0 = 5 */
+    /* MOVI R0, -5; MOVI R1, 10; ADD R0, R1; HALT → R0 = 5 */
     uint8_t bc[] = {
-        0x2B, 0x00, 0xFB, 0xFF,  /* MOVI R0, -5 */
-        0x2B, 0x01, 0x0A, 0x00,  /* MOVI R1, 10 */
-        0x08, 0x00, 0x01,        /* IADD R0, R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0xFB, 0xFF,  /* MOVI R0, -5 */
+        0x18, 0x01, 0x0A, 0x00,  /* MOVI R1, 10 */
+        0x20, 0x00, 0x01,        /* ADD R0, R1 */
+        0x00                     /* HALT */
     };
     int32_t r0 = run_bytecode(bc, sizeof(bc));
     ASSERT_EQ(r0, 5, "R0 should be 5 (-5 + 10)");
@@ -213,11 +213,11 @@ TEST(test_negative_immediate) {
 TEST(test_push_pop) {
     /* MOVI R0, 42; PUSH R0; MOVI R0, 0; POP R1; HALT → R1=42 */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x2A, 0x00,  /* MOVI R0, 42 */
-        0x20, 0x00,              /* PUSH R0 */
-        0x2B, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
-        0x21, 0x01,              /* POP R1 */
-        0x80                     /* HALT */
+        0x18, 0x00, 0x2A, 0x00,  /* MOVI R0, 42 */
+        0x0C, 0x00,              /* PUSH R0 */
+        0x18, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
+        0x0D, 0x01,              /* POP R1 */
+        0x00                     /* HALT */
     };
     FluxVM vm;
     flux_vm_init(&vm, bc, sizeof(bc), 4096);
@@ -237,12 +237,12 @@ TEST(test_conditional_branch) {
     */
     /* Simpler: MOVI R0, 0; JZ R0, skip; MOVI R1, 100; skip: MOVI R1, 200; HALT */
     uint8_t bc[] = {
-        0x2B, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
+        0x18, 0x00, 0x00, 0x00,  /* MOVI R0, 0 */
         /* JZ at 4: target=12, end=8, offset=12-8=4 */
-        0x05, 0x00, 0x04, 0x00,  /* JZ R0, +4 (skip past MOVI R1,100) */
-        0x2B, 0x01, 0x64, 0x00,  /* MOVI R1, 100 (skipped) */
-        0x2B, 0x01, 0xC8, 0x00,  /* MOVI R1, 200 */
-        0x80                     /* HALT */
+        0x3C, 0x00, 0x04, 0x00,  /* JZ R0, +4 (skip past MOVI R1,100) */
+        0x18, 0x01, 0x64, 0x00,  /* MOVI R1, 100 (skipped) */
+        0x18, 0x01, 0xC8, 0x00,  /* MOVI R1, 200 */
+        0x00                     /* HALT */
     };
     FluxVM vm;
     flux_vm_init(&vm, bc, sizeof(bc), 4096);

@@ -73,55 +73,50 @@ int64_t flux_vm_execute(FluxVM* v) {
         case FLUX_LOAD: rd=f8(v); rs1=f8(v); { FluxMemRegion* s=flux_mem_get(&v->mem,"stack"); if(s) GPR[rd]=flux_mem_read_i32(s,rs1*4); } break;
         case FLUX_STORE: rd=f8(v); rs1=f8(v); { FluxMemRegion* s=flux_mem_get(&v->mem,"stack"); if(s) flux_mem_write_i32(s,rd*4,GPR[rs1]); } break;
         case FLUX_JMP: rd=f8(v); imm=fi16(v); v->regs.pc+=imm; break;
-        case FLUX_JZ: rd=f8(v); imm=fi16(v); if(GPR[rd]==0) v->regs.pc+=imm; break;
-        case FLUX_JNZ: rd=f8(v); imm=fi16(v); if(GPR[rd]!=0) v->regs.pc+=imm; break;
+        case FLUX_JZ: rd=f8(v); imm=fi16(v); { if(GPR[rd]==0) v->regs.pc+=imm; } break;
+        case FLUX_JNZ: rd=f8(v); imm=fi16(v); { if(GPR[rd]!=0) v->regs.pc+=imm; } break;
+        case FLUX_JLT: rd=f8(v); imm=fi16(v); { if(GPR[rd]<0) v->regs.pc+=imm; } break;
+        case FLUX_JGT: rd=f8(v); imm=fi16(v); { if(GPR[rd]>0) v->regs.pc+=imm; } break;
         case FLUX_CALL: rd=f8(v); imm=fi16(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.pc; v->regs.pc+=imm; break;
 
-        case FLUX_IADD: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]+GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
-        case FLUX_ISUB: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]-GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
-        case FLUX_IMUL: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]*GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
-        case FLUX_IDIV: rd=f8(v); rs1=f8(v); if(!GPR[rs1]) ERR(3); GPR[rd]=GPR[rd]/GPR[rs1]; break;
-        case FLUX_IMOD: case FLUX_IREM: rd=f8(v); rs1=f8(v); if(!GPR[rs1]) ERR(3); GPR[rd]=GPR[rd]%GPR[rs1]; break;
-        case FLUX_INEG: rd=f8(v); { int32_t r=-GPR[rd]; sf(v,r); GPR[rd]=r; } break;
+        case FLUX_ADD: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]+GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
+        case FLUX_SUB: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]-GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
+        case FLUX_MUL: rd=f8(v); rs1=f8(v); { int32_t r=GPR[rd]*GPR[rs1]; sf(v,r); GPR[rd]=r; } break;
+        case FLUX_DIV: rd=f8(v); rs1=f8(v); if(!GPR[rs1]) ERR(3); GPR[rd]=GPR[rd]/GPR[rs1]; break;
+        case FLUX_MOD: rd=f8(v); rs1=f8(v); if(!GPR[rs1]) ERR(3); GPR[rd]=GPR[rd]%GPR[rs1]; break;
+        case FLUX_NEG: rd=f8(v); { int32_t r=-GPR[rd]; sf(v,r); GPR[rd]=r; } break;
         case FLUX_INC: rd=f8(v); { int32_t r=GPR[rd]+1; sf(v,r); GPR[rd]=r; } break;
         case FLUX_DEC: rd=f8(v); { int32_t r=GPR[rd]-1; sf(v,r); GPR[rd]=r; } break;
 
-        case FLUX_IAND: rd=f8(v); rs1=f8(v); GPR[rd]&=GPR[rs1]; break;
-        case FLUX_IOR:  rd=f8(v); rs1=f8(v); GPR[rd]|=GPR[rs1]; break;
-        case FLUX_IXOR: rd=f8(v); rs1=f8(v); GPR[rd]^=GPR[rs1]; break;
-        case FLUX_INOT: rd=f8(v); GPR[rd]=~GPR[rd]; break;
-        case FLUX_ISHL: rd=f8(v); rs1=f8(v); GPR[rd]<<=GPR[rs1]; break;
-        case FLUX_ISHR: rd=f8(v); rs1=f8(v); GPR[rd]>>=GPR[rs1]; break;
-        case FLUX_ROTL: rd=f8(v); rs1=f8(v); { uint32_t w=(uint32_t)GPR[rd]; int s=GPR[rs1]&31; GPR[rd]=(int32_t)((w<<s)|(w>>(32-s))); } break;
-        case FLUX_ROTR: rd=f8(v); rs1=f8(v); { uint32_t w=(uint32_t)GPR[rd]; int s=GPR[rs1]&31; GPR[rd]=(int32_t)((w>>s)|(w<<(32-s))); } break;
+        case FLUX_AND: rd=f8(v); rs1=f8(v); GPR[rd]&=GPR[rs1]; break;
+        case FLUX_OR:  rd=f8(v); rs1=f8(v); GPR[rd]|=GPR[rs1]; break;
+        case FLUX_XOR: rd=f8(v); rs1=f8(v); GPR[rd]^=GPR[rs1]; break;
+        case FLUX_NOT: rd=f8(v); GPR[rd]=~GPR[rd]; break;
+        case FLUX_SHL: rd=f8(v); rs1=f8(v); GPR[rd]<<=GPR[rs1]; break;
+        case FLUX_SHR: rd=f8(v); rs1=f8(v); GPR[rd]>>=GPR[rs1]; break;
 
-        case FLUX_ICMP: case FLUX_CMP: rd=f8(v); rs1=f8(v); scf(v,GPR[rd],GPR[rs1]); break;
-        case FLUX_IEQ: rd=f8(v); rs1=f8(v); GPR[rd]=(GPR[rd]==GPR[rs1]); break;
-        case FLUX_ILT: rd=f8(v); rs1=f8(v); GPR[rd]=(GPR[rd]<GPR[rs1]); break;
-        case FLUX_ILE: rd=f8(v); rs1=f8(v); GPR[rd]=(GPR[rd]<=GPR[rs1]); break;
-        case FLUX_IGT: rd=f8(v); rs1=f8(v); GPR[rd]=(GPR[rd]>GPR[rs1]); break;
-        case FLUX_IGE: rd=f8(v); rs1=f8(v); GPR[rd]=(GPR[rd]>=GPR[rs1]); break;
-        case FLUX_TEST: rd=f8(v); rs1=f8(v); sf(v,GPR[rd]&GPR[rs1]); break;
-        case FLUX_SETCC: rd=f8(v); rs1=f8(v); GPR[rd]=(rs1==0)?v->flag_zero:(rs1==1)?v->flag_sign:0; break;
+        case FLUX_CMP_EQ: rd=f8(v); rs1=f8(v); scf(v,GPR[rd],GPR[rs1]); break;
+        case FLUX_CMP_LT: rd=f8(v); rs1=f8(v); scf(v,GPR[rd],GPR[rs1]); break;
+        case FLUX_CMP_GT: rd=f8(v); rs1=f8(v); scf(v,GPR[rd],GPR[rs1]); break;
+        case FLUX_CMP_NE: rd=f8(v); rs1=f8(v); scf(v,GPR[rd],GPR[rs1]); break;
 
         case FLUX_PUSH: rd=f8(v); { int rc=spush(v,GPR[rd]); if(rc) ERR(rc); } break;
         case FLUX_POP: rd=f8(v); GPR[rd]=spop(v); break;
         case FLUX_DUP: { int32_t val=spop(v); if(spush(v,val)) ERR(4); if(spush(v,val)) ERR(4); } break;
+        case FLUX_SWP: { FluxMemRegion* s=flux_mem_get(&v->mem,"stack"); if(s){int32_t a=flux_mem_read_i32(s,v->regs.sp),b=flux_mem_read_i32(s,v->regs.sp+4); flux_mem_write_i32(s,v->regs.sp,b); flux_mem_write_i32(s,v->regs.sp+4,a);} } break;
+        case FLUX_RET: rd=f8(v); if(!v->frame_count) ERR(5); v->regs.pc=v->frame_stack[--v->frame_count]; break;
+        case FLUX_LOOP: rd=f8(v); rs1=f8(v); GPR[rd]+=GPR[rs1]; break;
+
+        case FLUX_JAL: rd=f8(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.pc; v->regs.pc=(uint32_t)GPR[rd]; break;
+        case FLUX_TAILCALL: rd=f8(v); v->regs.pc=(uint32_t)GPR[rd]; break;
+        case FLUX_MOVI: rd=f8(v); imm=fi16(v); GPR[rd]=imm; break;
+
         case FLUX_SWAP: { FluxMemRegion* s=flux_mem_get(&v->mem,"stack"); if(s){int32_t a=flux_mem_read_i32(s,v->regs.sp),b=flux_mem_read_i32(s,v->regs.sp+4); flux_mem_write_i32(s,v->regs.sp,b); flux_mem_write_i32(s,v->regs.sp+4,a);} } break;
+        case FLUX_TEST: rd=f8(v); rs1=f8(v); sf(v,GPR[rd]&GPR[rs1]); break;
+        case FLUX_SETCC: rd=f8(v); rs1=f8(v); GPR[rd]=(rs1==0)?v->flag_zero:(rs1==1)?v->flag_sign:0; break;
         case FLUX_ENTER: rd=f8(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.sp; v->regs.sp-=rd*4; break;
         case FLUX_LEAVE: rd=f8(v); if(!v->frame_count) ERR(5); v->regs.sp=v->frame_stack[--v->frame_count]+rd*4; break;
         case FLUX_ALLOCA: rd=f8(v); rs1=f8(v); GPR[rd]+=GPR[rs1]; break;
-
-        case FLUX_RET: rd=f8(v); if(!v->frame_count) ERR(5); v->regs.pc=v->frame_stack[--v->frame_count]; break;
-        case FLUX_CALL_IND: rd=f8(v); if(v->frame_count>=256) ERR(4); v->frame_stack[v->frame_count++]=v->regs.pc; v->regs.pc=(uint32_t)GPR[rd]; break;
-        case FLUX_TAILCALL: rd=f8(v); v->regs.pc=(uint32_t)GPR[rd]; break;
-        case FLUX_MOVI: rd=f8(v); imm=fi16(v); GPR[rd]=imm; break;
-        case FLUX_JE: rd=f8(v); imm=fi16(v); if(v->flag_zero) v->regs.pc+=imm; break;
-        case FLUX_JNE: rd=f8(v); imm=fi16(v); if(!v->flag_zero) v->regs.pc+=imm; break;
-        case FLUX_JL: rd=f8(v); imm=fi16(v); if(v->flag_sign!=v->flag_overflow) v->regs.pc+=imm; break;
-        case FLUX_JGE: rd=f8(v); imm=fi16(v); if(!(v->flag_sign!=v->flag_overflow)) v->regs.pc+=imm; break;
-        case FLUX_JG: rd=f8(v); imm=fi16(v); if(!v->flag_zero&&v->flag_sign!=v->flag_overflow) v->regs.pc+=imm; break;
-        case FLUX_JLE: rd=f8(v); imm=fi16(v); if(v->flag_zero||(v->flag_sign!=v->flag_overflow)) v->regs.pc+=imm; break;
 
         case FLUX_REGION_CREATE: { len=fu16(v); data=&v->bytecode[v->regs.pc]; v->regs.pc+=len; uint8_t nl=data[0]; char nm[64]={0}; memcpy(nm,data+1,nl<63?nl:63); uint32_t sz; memcpy(&sz,data+1+nl,4); flux_mem_create(&v->mem,nm,sz,"agent"); } break;
         case FLUX_REGION_DESTROY: { len=fu16(v); data=&v->bytecode[v->regs.pc]; v->regs.pc+=len; char nm[64]={0}; memcpy(nm,data,len<63?len:63); flux_mem_destroy(&v->mem,nm); } break;
@@ -140,10 +135,10 @@ int64_t flux_vm_execute(FluxVM* v) {
         case FLUX_FSUB: rd=f8(v); rs1=f8(v); v->regs.fp[rd]-=v->regs.fp[rs1]; break;
         case FLUX_FMUL: rd=f8(v); rs1=f8(v); v->regs.fp[rd]*=v->regs.fp[rs1]; break;
         case FLUX_FDIV: rd=f8(v); rs1=f8(v); if(!v->regs.fp[rs1]) ERR(3); v->regs.fp[rd]/=v->regs.fp[rs1]; break;
-        case FLUX_FNEG: rd=f8(v); v->regs.fp[rd]=-v->regs.fp[rd]; break;
-        case FLUX_FABS: rd=f8(v); v->regs.fp[rd]=fabsf(v->regs.fp[rd]); break;
         case FLUX_FMIN: rd=f8(v); rs1=f8(v); { float a=v->regs.fp[rd],b=v->regs.fp[rs1]; v->regs.fp[rd]=a<b?a:b; } break;
         case FLUX_FMAX: rd=f8(v); rs1=f8(v); { float a=v->regs.fp[rd],b=v->regs.fp[rs1]; v->regs.fp[rd]=a>b?a:b; } break;
+        case FLUX_FNEG: rd=f8(v); v->regs.fp[rd]=-v->regs.fp[rd]; break;
+        case FLUX_FABS: rd=f8(v); v->regs.fp[rd]=fabsf(v->regs.fp[rd]); break;
         case FLUX_FEQ: rd=f8(v); rs1=f8(v); GPR[rd]=(v->regs.fp[rd]==v->regs.fp[rs1]); break;
         case FLUX_FLT: rd=f8(v); rs1=f8(v); GPR[rd]=(v->regs.fp[rd]<v->regs.fp[rs1]); break;
         case FLUX_FLE: rd=f8(v); rs1=f8(v); GPR[rd]=(v->regs.fp[rd]<=v->regs.fp[rs1]); break;
@@ -160,18 +155,31 @@ int64_t flux_vm_execute(FluxVM* v) {
         case FLUX_VDIV: { rd=f8(v); rs1=f8(v); for(int i=0;i<4;i++){int32_t a,b; memcpy(&a,v->regs.vec[rd]+i*4,4); memcpy(&b,v->regs.vec[rs1]+i*4,4); if(b){a/=b; memcpy(v->regs.vec[rd]+i*4,&a,4);}} } break;
         case FLUX_VFMA: { rd=f8(v); rs1=f8(v); rs2=f8(v); for(int i=0;i<4;i++){float a,b,c; memcpy(&a,v->regs.vec[rd]+i*4,4); memcpy(&b,v->regs.vec[rs1]+i*4,4); memcpy(&c,v->regs.vec[rs2]+i*4,4); float r=a+b*c; memcpy(v->regs.vec[rd]+i*4,&r,4);} } break;
 
-        case FLUX_TELL: case FLUX_ASK: case FLUX_DELEGATE: case FLUX_DELEGATE_RESULT:
-        case FLUX_REPORT_STATUS: case FLUX_REQUEST_OVERRIDE:
-        case FLUX_BROADCAST: case FLUX_REDUCE:
-        case FLUX_DECLARE_INTENT: case FLUX_ASSERT_GOAL: case FLUX_VERIFY_OUTCOME:
-        case FLUX_EXPLAIN_FAILURE: case FLUX_SET_PRIORITY:
-        case FLUX_TRUST_CHECK: case FLUX_TRUST_UPDATE: case FLUX_TRUST_QUERY:
+        case FLUX_TELL:
+        case FLUX_DELEGATE_RESULT:
+        case FLUX_REPORT_STATUS:
+        case FLUX_REQUEST_OVERRIDE:
+        case FLUX_REDUCE:
+        case FLUX_DECLARE_INTENT:
+        case FLUX_ASSERT_GOAL:
+        case FLUX_VERIFY_OUTCOME:
+        case FLUX_EXPLAIN_FAILURE:
+        case FLUX_SET_PRIORITY:
+        case FLUX_TRUST_CHECK:
+        case FLUX_TRUST_UPDATE:
+        case FLUX_TRUST_QUERY:
         case FLUX_REVOKE_TRUST:
-        case FLUX_CAP_REQUIRE: case FLUX_CAP_REQUEST: case FLUX_CAP_GRANT: case FLUX_CAP_REVOKE:
-        case FLUX_BARRIER: case FLUX_SYNC_CLOCK: case FLUX_FORMATION_UPDATE:
+        case FLUX_CAP_REQUIRE:
+        case FLUX_CAP_REQUEST:
+        case FLUX_CAP_GRANT:
+        case FLUX_CAP_REVOKE:
+        case FLUX_BARRIER:
+        case FLUX_SYNC_CLOCK:
+        case FLUX_FORMATION_UPDATE:
         { len=fu16(v); data=&v->bytecode[v->regs.pc]; v->regs.pc+=len; if(v->a2a_handler) v->a2a_handler(v,op,data,len); } break;
 
-        case FLUX_EMERGENCY_STOP: case FLUX_HALT:
+        case FLUX_EMERGENCY_STOP:
+        case FLUX_HALT:
             v->halted=1; v->running=0; v->last_error=1; return (int64_t)v->cycle_count;
 
         case FLUX_YIELD: break;
