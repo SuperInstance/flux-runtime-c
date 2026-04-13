@@ -146,6 +146,108 @@ void test_jmp_forward() {
     printf("  PASS jmp forward: %d\n", r);
 }
 
+void test_nop() {
+    ISA2VM vm;
+    uint8_t code[] = { ISA2_NOP, 0, 0, 0, ISA2_HALT, 0, 0, 0 };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 0);
+    printf("  PASS nop: R0=%d\n", r);
+}
+
+void test_mov() {
+    ISA2VM vm;
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 42, 0,
+        ISA2_MOV,  1, 0, 0,
+        ISA2_HALT, 0, 0, 0
+    };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 42);
+    assert(vm.gp[1] == 42);
+    printf("  PASS mov: R1=%d\n", vm.gp[1]);
+}
+
+void test_cmp() {
+    ISA2VM vm;
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 10, 0,
+        ISA2_MOVI, 1, 10, 0,
+        ISA2_CMP,  0, 1, 0,
+        ISA2_HALT, 0, 0, 0
+    };
+    isa2_execute(&vm, code, sizeof(code));
+    assert(vm.flags == 1);
+    printf("  PASS cmp equal: flags=%d\n", vm.flags);
+}
+
+void test_jz() {
+    ISA2VM vm;
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 0, 0,
+        ISA2_JZ,   0, 4, 0,   // skip forward 4 bytes (over MOVI)
+        ISA2_MOVI, 1, 5, 0,
+        ISA2_HALT, 0, 0, 0
+    };
+    isa2_execute(&vm, code, sizeof(code));
+    assert(vm.gp[1] == 0);
+    printf("  PASS jz taken: R1=%d\n", vm.gp[1]);
+}
+
+void test_div_by_zero() {
+    ISA2VM vm;
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 100, 0,
+        ISA2_MOVI, 1, 0, 0,
+        ISA2_IDIV, 2, 0, 1,
+        ISA2_HALT, 0, 0, 0
+    };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 100);
+    assert(vm.gp[2] == 0);
+    printf("  PASS div by zero leaves dest unchanged: R2=%d\n", vm.gp[2]);
+}
+
+void test_pop_empty() {
+    ISA2VM vm;
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 99, 0,
+        ISA2_POP,  0, 0, 0,
+        ISA2_HALT, 0, 0, 0
+    };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 99);
+    printf("  PASS pop on empty stack leaves R0=%d\n", r);
+}
+
+void test_jnz_nonzero() {
+    ISA2VM vm;
+    /* MOVI R0,5; JNZ R0,+4; MOVI R0,0; (skip) MOVI R0,42; HALT */
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 5, 0,
+        ISA2_JNZ,  0, 4, 0,
+        ISA2_MOVI, 0, 0, 0,
+        ISA2_MOVI, 0, 42, 0,
+        ISA2_HALT, 0,0,0
+    };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 42);
+    printf("  PASS jnz taken: R0=%d\n", r);
+}
+
+void test_jnz_zero() {
+    ISA2VM vm;
+    /* MOVI R0,0; JNZ R0,+4; MOVI R0,99; (not skip) HALT => R0=99 */
+    uint8_t code[] = {
+        ISA2_MOVI, 0, 0, 0,
+        ISA2_JNZ,  0, 4, 0,
+        ISA2_MOVI, 0, 99, 0,
+        ISA2_HALT, 0,0,0
+    };
+    int32_t r = isa2_execute(&vm, code, sizeof(code));
+    assert(r == 99);
+    printf("  PASS jnz not taken: R0=%d\n", r);
+}
+
 int main() {
     printf("ISA v2 Tests:\n");
     test_movi_halt();
