@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
+#include <math.h>
 #include "flux/memory.h"
 #include "flux/registers.h"
 #include "flux/opcodes.h"
@@ -153,6 +154,42 @@ static void test_registers_fp_rw(void) {
     PASS;
 }
 
+static void test_float_edge_cases(void) {
+    FluxRegFile rf;
+    flux_regs_init(&rf);
+    // INFINITY
+    float inf = INFINITY;
+    flux_fp_write(&rf, 0, inf);
+    float r = flux_fp_read(&rf, 0);
+    ASSERT(isinf(r) && r > 0, "INFINITY preserved");
+    // -INFINITY
+    float neg_inf = -INFINITY;
+    flux_fp_write(&rf, 1, neg_inf);
+    r = flux_fp_read(&rf, 1);
+    ASSERT(isinf(r) && r < 0, "-INFINITY preserved");
+    // NaN
+    float nan = NAN;
+    flux_fp_write(&rf, 2, nan);
+    r = flux_fp_read(&rf, 2);
+    ASSERT(isnan(r), "NaN preserved");
+    // subnormal
+    float sub = 1.0e-45f; // denormal for IEEE 754 single
+    ASSERT(fpclassify(sub) == FP_SUBNORMAL, "subnormal value");
+    flux_fp_write(&rf, 3, sub);
+    r = flux_fp_read(&rf, 3);
+    ASSERT(r == sub, "subnormal preserved");
+    // signed zero
+    float pos_zero = 0.0f;
+    float neg_zero = -0.0f;
+    flux_fp_write(&rf, 4, pos_zero);
+    r = flux_fp_read(&rf, 4);
+    ASSERT(r == pos_zero && signbit(r) == 0, "positive zero");
+    flux_fp_write(&rf, 5, neg_zero);
+    r = flux_fp_read(&rf, 5);
+    ASSERT(r == neg_zero && signbit(r) != 0, "negative zero");
+    PASS;
+}
+
 static void test_opcode_names(void) {
     const char* name;
     name = flux_opcode_name(FLUX_HALT);
@@ -292,6 +329,7 @@ int main(void) {
     RUN(test_registers_init);
     RUN(test_registers_gp_rw);
     RUN(test_registers_fp_rw);
+    RUN(test_float_edge_cases);
     RUN(test_opcode_names);
     RUN(test_vm_init_free);
     RUN(test_vm_reset);
