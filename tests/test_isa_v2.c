@@ -164,6 +164,8 @@ int main() {
     test_jz();
     test_div_by_zero();
     test_pop_empty();
-    printf("\nAll 16 ISA v2 tests passed!\n");
+    test_jnz_nonzero();
+    test_jnz_zero();
+    printf("\nAll 18 ISA v2 tests passed!\n");
     return 0;
 }
