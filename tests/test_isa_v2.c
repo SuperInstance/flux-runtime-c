@@ -158,6 +158,12 @@ int main() {
     test_fibonacci();
     test_negative_immediate();
     test_jmp_forward();
-    printf("\nAll 10 ISA v2 tests passed!\n");
+    test_nop();
+    test_mov();
+    test_cmp();
+    test_jz();
+    test_div_by_zero();
+    test_pop_empty();
+    printf("\nAll 16 ISA v2 tests passed!\n");
     return 0;
 }
