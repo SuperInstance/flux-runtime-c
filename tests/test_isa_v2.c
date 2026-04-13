@@ -269,5 +269,6 @@ int main() {
     test_jnz_nonzero();
     test_jnz_zero();
     printf("\nAll 18 ISA v2 tests passed!\n");
+    // Additional tests can be added here
     return 0;
 }
