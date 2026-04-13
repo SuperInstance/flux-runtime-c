@@ -1,8 +1,14 @@
 CC=gcc
 CFLAGS=-std=c11 -Wall -Wextra -O2 -Iinclude
+CFLAGS_DEBUG=-std=c11 -Wall -Wextra -g -DDEBUG_BUILD -DFLUX_TRACE_ENABLED -Iinclude
 OBJS=src/opcodes.o src/registers.o src/memory.o src/vm.o
+OBJS_DEBUG=src/opcodes.debug.o src/registers.debug.o src/memory.debug.o src/vm.debug.o
 
 all: flux-runtime flux-asm test_vm test_memory test_asm
+
+debug: CFLAGS=$(CFLAGS_DEBUG)
+debug: OBJS=$(OBJS_DEBUG)
+debug: flux-runtime flux-asm test_vm test_memory test_asm
 
 flux-runtime: src/main.c $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -22,6 +28,9 @@ test_asm: tests/test_asm.c $(OBJS)
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+src/%.debug.o: src/%.c
+	$(CC) $(CFLAGS_DEBUG) -c -o $@ $<
+
 test: test_vm test_memory test_asm
 	@echo "--- VM Tests ---"
 	@./test_vm
@@ -31,9 +40,9 @@ test: test_vm test_memory test_asm
 	@./test_asm
 
 clean:
-	rm -f flux-runtime flux-asm test_vm test_memory test_asm src/*.o
+	rm -f flux-runtime flux-asm test_vm test_memory test_asm src/*.o src/*.debug.o
 
-.PHONY: all test clean
+.PHONY: all test clean debug
 
 isa_v2: src/isa_v2.c src/isa_v2.h
 	gcc -Wall -O2 -o test_isa_v2 tests/test_isa_v2.c src/isa_v2.c -I src

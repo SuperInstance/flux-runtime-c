@@ -5,13 +5,16 @@
 extern "C" {
 #endif
 
-// ISA v2 Specification
+// FLUX Unified ISA v2 — 247-opcode specification
 typedef enum {
     // System: 0x00-0x07
     FLUX_HALT=0x00,
     FLUX_NOP=0x01,
     FLUX_RET=0x02,
     FLUX_BRK=0x04,
+    FLUX_SYS_CALL=0x05,
+    FLUX_TRAP=0x06,
+    FLUX_UNREACHABLE=0x07,
 
     // Single register: 0x08-0x0F
     FLUX_INC=0x08,
@@ -20,10 +23,28 @@ typedef enum {
     FLUX_NEG=0x0B,
     FLUX_PUSH=0x0C,
     FLUX_POP=0x0D,
+    FLUX_ABS=0x0E,
+    FLUX_SQRT=0x0F,
+
+    // Register pair: 0x10-0x17
+    FLUX_MIN=0x10,
+    FLUX_MAX=0x11,
+    FLUX_CLZ=0x12,
+    FLUX_CTZ=0x13,
+    FLUX_POPCNT=0x14,
+    FLUX_BSWAP=0x15,
+    FLUX_SIGN_EXT=0x16,
+    FLUX_ZERO_EXT=0x17,
 
     // Immediate: 0x18-0x1F
     FLUX_MOVI=0x18,
     FLUX_ADDI=0x19,
+    FLUX_SUBI=0x1A,
+    FLUX_MULI=0x1B,
+    FLUX_ANDI=0x1C,
+    FLUX_ORI=0x1D,
+    FLUX_XORI=0x1E,
+    FLUX_SHLI=0x1F,
 
     // Arithmetic: 0x20-0x2B
     FLUX_ADD=0x20,
@@ -36,6 +57,8 @@ typedef enum {
     FLUX_XOR=0x27,
     FLUX_SHL=0x28,
     FLUX_SHR=0x29,
+    FLUX_ROL=0x2A,
+    FLUX_ROR=0x2B,
 
     // Compare: 0x2C-0x2F
     FLUX_CMP_EQ=0x2C,
@@ -50,6 +73,8 @@ typedef enum {
     FLUX_FDIV=0x33,
     FLUX_FMIN=0x34,
     FLUX_FMAX=0x35,
+    FLUX_FSQRT=0x36,
+    FLUX_FMOD=0x37,
 
     // Memory: 0x38-0x3B
     FLUX_LOAD=0x38,
@@ -63,11 +88,27 @@ typedef enum {
     FLUX_JLT=0x3E,
     FLUX_JGT=0x3F,
 
+    // Extended branch: 0x40-0x42
+    FLUX_JLE=0x40,
+    FLUX_JGE=0x41,
+    FLUX_JEQ=0x42,
+
     // Jump: 0x43-0x46
     FLUX_JMP=0x43,
     FLUX_JAL=0x44,
     FLUX_CALL=0x45,
     FLUX_LOOP=0x46,
+
+    // Extended jump: 0x47-0x4F
+    FLUX_JMP_REG=0x47,
+    FLUX_CALL_REG=0x48,
+    FLUX_RET_IMM=0x49,
+    FLUX_SWITCH=0x4A,
+    FLUX_TABLE_SWITCH=0x4B,
+    FLUX_LOOKUP_SWITCH=0x4C,
+    FLUX_LONG_JUMP=0x4D,
+    FLUX_CALL_INDIRECT=0x4E,
+    FLUX_TAILCALL_INDIRECT=0x4F,
 
     // A2A: 0x50-0x53
     FLUX_TELL=0x50,
@@ -75,8 +116,22 @@ typedef enum {
     FLUX_DELEG=0x52,
     FLUX_BCAST=0x53,
 
-    // Extended opcodes (implementation-specific): 0x60-0x84
-    FLUX_DELEGATE=0x52,  // Alias for DELEG
+    // Extended A2A: 0x54-0x5F
+    FLUX_REQUEST=0x54,
+    FLUX_REPLY=0x55,
+    FLUX_SUBSCRIBE=0x56,
+    FLUX_UNSUBSCRIBE=0x57,
+    FLUX_PUBLISH=0x58,
+    FLUX_QUERY=0x59,
+    FLUX_RESPOND=0x5A,
+    FLUX_MERGE=0x5B,
+    FLUX_SPLIT=0x5C,
+    FLUX_GATHER=0x5D,
+    FLUX_SCATTER=0x5E,
+    FLUX_BARRIER_WAIT=0x5F,
+
+    // Agent coordination: 0x60-0x6F
+    FLUX_DELEGATE=0x60,
     FLUX_DELEGATE_RESULT=0x63,
     FLUX_REPORT_STATUS=0x64,
     FLUX_REQUEST_OVERRIDE=0x65,
@@ -87,6 +142,8 @@ typedef enum {
     FLUX_VERIFY_OUTCOME=0x6A,
     FLUX_EXPLAIN_FAILURE=0x6B,
     FLUX_SET_PRIORITY=0x6C,
+
+    // Trust & capability: 0x70-0x7F
     FLUX_TRUST_CHECK=0x70,
     FLUX_TRUST_UPDATE=0x71,
     FLUX_TRUST_QUERY=0x72,
@@ -99,12 +156,25 @@ typedef enum {
     FLUX_SYNC_CLOCK=0x79,
     FLUX_FORMATION_UPDATE=0x7A,
     FLUX_EMERGENCY_STOP=0x7B,
+
+    // Resource management: 0x80-0x84
+    FLUX_ALLOCA_REG=0x80,
     FLUX_YIELD=0x81,
     FLUX_RESOURCE_ACQUIRE=0x82,
     FLUX_RESOURCE_RELEASE=0x83,
     FLUX_DEBUG_BREAK=0x84,
 
-    // Extended opcodes: 0x90-0x9F
+    // Debug/trace: 0x85-0x8F
+    FLUX_TRACE_ON=0x85,
+    FLUX_TRACE_OFF=0x86,
+    FLUX_TRACE_POINT=0x87,
+    FLUX_LOG=0x88,
+    FLUX_ASSERT=0x89,
+    FLUX_PERF_BEGIN=0x8A,
+    FLUX_PERF_END=0x8B,
+    FLUX_WATCHPOINT=0x8C,
+
+    // Stack ops: 0x90-0x9F
     FLUX_DUP=0x90,
     FLUX_SWAP=0x91,
     FLUX_TEST=0x92,
@@ -122,7 +192,7 @@ typedef enum {
     FLUX_CAST=0x9E,
     FLUX_BOX=0x9F,
 
-    // Extended opcodes: 0xA0-0xAF
+    // Type ops: 0xA0-0xAF
     FLUX_UNBOX=0xA0,
     FLUX_CHECK_TYPE=0xA1,
     FLUX_CHECK_BOUNDS=0xA2,
@@ -135,6 +205,10 @@ typedef enum {
     FLUX_FGE=0xA9,
     FLUX_LOAD8=0xAA,
     FLUX_STORE8=0xAB,
+    FLUX_LOAD16=0xAC,
+    FLUX_STORE16=0xAD,
+    FLUX_LOAD32=0xAE,
+    FLUX_STORE32=0xAF,
 
     // Vector operations: 0xB0-0xBF
     FLUX_VLOAD=0xB0,
@@ -144,6 +218,78 @@ typedef enum {
     FLUX_VMUL=0xB4,
     FLUX_VDIV=0xB5,
     FLUX_VFMA=0xB6,
+    FLUX_VDOT=0xB7,
+    FLUX_VMIN=0xB8,
+    FLUX_VMAX=0xB9,
+    FLUX_VAND=0xBA,
+    FLUX_VOR=0xBB,
+    FLUX_VXOR=0xBC,
+    FLUX_VSHL=0xBD,
+    FLUX_VSHR=0xBE,
+    FLUX_VCMPEQ=0xBF,
+
+    // Atomic operations: 0xC0-0xCF
+    FLUX_ATOMIC_LOAD=0xC0,
+    FLUX_ATOMIC_STORE=0xC1,
+    FLUX_ATOMIC_ADD=0xC2,
+    FLUX_ATOMIC_SUB=0xC3,
+    FLUX_ATOMIC_AND=0xC4,
+    FLUX_ATOMIC_OR=0xC5,
+    FLUX_ATOMIC_XOR=0xC6,
+    FLUX_ATOMIC_CMPXCHG=0xC7,
+    FLUX_ATOMIC_FENCE=0xC8,
+    FLUX_ATOMIC_LOAD_ACQ=0xC9,
+    FLUX_ATOMIC_STORE_REL=0xCA,
+    FLUX_MUTEX_LOCK=0xCB,
+    FLUX_MUTEX_UNLOCK=0xCC,
+    FLUX_SEM_WAIT=0xCD,
+    FLUX_SEM_SIGNAL=0xCE,
+    FLUX_FUTEX_WAKE=0xCF,
+
+    // Crypto/hashing: 0xD0-0xDF
+    FLUX_HASH_INIT=0xD0,
+    FLUX_HASH_UPDATE=0xD1,
+    FLUX_HASH_FINAL=0xD2,
+    FLUX_HASH_VERIFY=0xD3,
+    FLUX_HMAC_INIT=0xD4,
+    FLUX_HMAC_UPDATE=0xD5,
+    FLUX_ENCRYPT=0xD6,
+    FLUX_DECRYPT=0xD7,
+    FLUX_SIGN=0xD8,
+    FLUX_VERIFY_SIG=0xD9,
+    FLUX_RANDOM=0xDA,
+    FLUX_RANDOM_SEED=0xDB,
+    FLUX_UUID_GEN=0xDC,
+    FLUX_CHECKSUM=0xDD,
+    FLUX_CRC32=0xDE,
+    FLUX_BASE64_ENCODE=0xDF,
+
+    // I/O: 0xE0-0xEF
+    FLUX_IO_READ=0xE0,
+    FLUX_IO_WRITE=0xE1,
+    FLUX_IO_OPEN=0xE2,
+    FLUX_IO_CLOSE=0xE3,
+    FLUX_IO_SEEK=0xE4,
+    FLUX_IO_FLUSH=0xE5,
+    FLUX_IO_STAT=0xE6,
+    FLUX_IO_EOF=0xE7,
+    FLUX_PRINT_INT=0xE8,
+    FLUX_PRINT_STR=0xE9,
+    FLUX_PRINT_FLOAT=0xEA,
+    FLUX_PRINT_HEX=0xEB,
+    FLUX_READ_LINE=0xEC,
+    FLUX_PARSE_INT=0xED,
+    FLUX_PARSE_FLOAT=0xEE,
+    FLUX_SPRINTF=0xEF,
+
+    // String/aggregate: 0xF0-0xF6
+    FLUX_STR_LEN=0xF0,
+    FLUX_STR_CAT=0xF1,
+    FLUX_STR_CMP=0xF2,
+    FLUX_STR_COPY=0xF3,
+    FLUX_STR_SUB=0xF4,
+    FLUX_STR_FIND=0xF5,
+    FLUX_ARR_NEW=0xF6,
 
     // Legacy aliases for backward compatibility
     FLUX_IADD=FLUX_ADD,
@@ -157,8 +303,8 @@ typedef enum {
     FLUX_IXOR=FLUX_XOR,
     FLUX_ISHL=FLUX_SHL,
     FLUX_ISHR=FLUX_SHR,
-    FLUX_ROTL=FLUX_SHL,
-    FLUX_ROTR=FLUX_SHR,
+    FLUX_ROTL=FLUX_ROL,
+    FLUX_ROTR=FLUX_ROR,
     FLUX_INEG=FLUX_NEG,
     FLUX_CMP=FLUX_CMP_EQ,
     FLUX_ICMP=FLUX_CMP_EQ,
@@ -170,7 +316,7 @@ typedef enum {
 } FluxOpcode;
 
 const char* flux_opcode_name(uint8_t op);
-#define FLUX_OPCODE_COUNT 133
+#define FLUX_OPCODE_COUNT 247
 
 #ifdef __cplusplus
 }
