@@ -28,7 +28,7 @@ void test_call_ret() {
 }
 
 void test_bitwise_and() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 0xFF);    // R0 = 255
     isa2_encode_movi(&code[4], 1, 0x0F);    // R1 = 15
     code[8] = ISA2_AND; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 & R1
@@ -42,7 +42,7 @@ void test_bitwise_and() {
 }
 
 void test_bitwise_xor() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 0xFF);    // R0 = 255
     isa2_encode_movi(&code[4], 1, 0x0F);    // R1 = 15
     code[8] = ISA2_XOR; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 ^ R1
@@ -56,7 +56,7 @@ void test_bitwise_xor() {
 }
 
 void test_shift_left() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 1);       // R0 = 1
     isa2_encode_movi(&code[4], 1, 4);       // R1 = 4
     code[8] = ISA2_SHL; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 << R1
@@ -70,7 +70,7 @@ void test_shift_left() {
 }
 
 void test_modulo() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 17);      // R0 = 17
     isa2_encode_movi(&code[4], 1, 5);       // R1 = 5
     code[8] = ISA2_IMOD; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 % R1
@@ -84,7 +84,7 @@ void test_modulo() {
 }
 
 void test_negate() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 42);      // R0 = 42
     code[4] = ISA2_NEG; code[5] = 1; code[6] = 0; code[7] = 0; // R1 = -R0
     code[8] = ISA2_HALT;
@@ -96,7 +96,7 @@ void test_negate() {
 }
 
 void test_swap() {
-    uint8_t code[16] = {0};
+    uint8_t code[32] = {0};
     isa2_encode_movi(&code[0], 0, 10);      // R0 = 10
     isa2_encode_movi(&code[4], 1, 20);      // R1 = 20
     code[8] = ISA2_SWAP; code[9] = 0; code[10] = 1; code[11] = 0; // SWAP R0, R1
