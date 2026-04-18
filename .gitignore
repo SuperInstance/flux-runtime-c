@@ -4,3 +4,6 @@ test_vm
 test_memory
 flux-runtime
 .aider*
+*.o
+examples/fibonacci_v2
+examples/bitwise_demo
