@@ -1,5 +1,6 @@
 #include "isa_v2.h"
 #include <string.h>
+#include <stdio.h>
 
 void isa2_init(ISA2VM* vm) {
     memset(vm, 0, sizeof(ISA2VM));
@@ -98,6 +99,88 @@ int32_t isa2_execute(ISA2VM* vm, uint8_t* bc, int32_t len) {
                 }
                 break;
                 
+            // Extended opcodes (ISA v2.1)
+            case ISA2_CALL: { // [0x40][0x00][addr_lo][addr_hi]
+                int16_t addr = read_s16(b2, b3);
+                if (vm->sp < ISA2_STACK_SIZE) {
+                    vm->stack[vm->sp++] = vm->pc + 4; // push return address
+                }
+                next_pc = addr;
+                break;
+            }
+            
+            case ISA2_RET: // [0x41][0x00][0x00][0x00]
+                if (vm->sp > 0) {
+                    next_pc = vm->stack[--vm->sp];
+                }
+                break;
+            
+            case ISA2_AND: // [0x42][rd][rs1][rs2]
+                vm->gp[b1] = vm->gp[b2] & vm->gp[b3];
+                break;
+            
+            case ISA2_OR: // [0x43][rd][rs1][rs2]
+                vm->gp[b1] = vm->gp[b2] | vm->gp[b3];
+                break;
+            
+            case ISA2_XOR: // [0x44][rd][rs1][rs2]
+                vm->gp[b1] = vm->gp[b2] ^ vm->gp[b3];
+                break;
+            
+            case ISA2_NOT: // [0x45][rd][rs][0x00]
+                vm->gp[b1] = ~vm->gp[b2];
+                break;
+            
+            case ISA2_SHL: // [0x46][rd][rs1][rs2]
+                vm->gp[b1] = vm->gp[b2] << (vm->gp[b3] & 0x1F);
+                break;
+            
+            case ISA2_SHR: // [0x47][rd][rs1][rs2]
+                vm->gp[b1] = (int32_t)((uint32_t)vm->gp[b2] >> (vm->gp[b3] & 0x1F));
+                break;
+            
+            case ISA2_IMOD: // [0x48][rd][rs1][rs2]
+                if (vm->gp[b3] != 0)
+                    vm->gp[b1] = vm->gp[b2] % vm->gp[b3];
+                break;
+            
+            case ISA2_PRINT: // [0x49][rd][0x00][0x00]
+                printf("R%d = %d\n", b1, vm->gp[b1]);
+                break;
+            
+            case ISA2_LOAD: // [0x4A][rd][rs][0x00] — load from stack[rs]
+                if (vm->gp[b2] >= 0 && vm->gp[b2] < ISA2_STACK_SIZE)
+                    vm->gp[b1] = vm->stack[vm->gp[b2]];
+                break;
+            
+            case ISA2_STORE: // [0x4B][rd][rs][0x00] — store rs to stack[rd]
+                if (vm->gp[b1] >= 0 && vm->gp[b1] < ISA2_STACK_SIZE)
+                    vm->stack[vm->gp[b1]] = vm->gp[b2];
+                break;
+            
+            case ISA2_DUP: // [0x4C][rd][0x00][0x00]
+                if (vm->sp < ISA2_STACK_SIZE) {
+                    vm->stack[vm->sp] = vm->stack[vm->sp - 1];
+                    vm->sp++;
+                }
+                break;
+            
+            case ISA2_SWAP: // [0x4D][rs1][rs2][0x00]
+                { int32_t tmp = vm->gp[b1]; vm->gp[b1] = vm->gp[b2]; vm->gp[b2] = tmp; }
+                break;
+            
+            case ISA2_NEG: // [0x4E][rd][rs][0x00]
+                vm->gp[b1] = -vm->gp[b2];
+                break;
+            
+            case ISA2_XCHG: // [0x4F][0x00][0x00][0x00]
+                if (vm->sp >= 2) {
+                    int32_t tmp = vm->stack[vm->sp - 1];
+                    vm->stack[vm->sp - 1] = vm->stack[vm->sp - 2];
+                    vm->stack[vm->sp - 2] = tmp;
+                }
+                break;
+            
             case ISA2_HALT:
                 vm->halted = true;
                 break;

@@ -65,3 +65,21 @@ static inline void isa2_encode_halt(uint8_t* buf) {
 }
 
 #endif
+
+// Extended opcodes (ISA v2.1)
+#define ISA2_CALL  0x40  // CALL addr — push PC+4, jump to addr
+#define ISA2_RET   0x41  // RET — pop address, jump to it
+#define ISA2_AND   0x42  // AND rd, rs1, rs2
+#define ISA2_OR    0x43  // OR rd, rs1, rs2
+#define ISA2_XOR   0x44  // XOR rd, rs1, rs2
+#define ISA2_NOT   0x45  // NOT rd, rs — bitwise complement
+#define ISA2_SHL   0x46  // SHL rd, rs1, rs2 — shift left
+#define ISA2_SHR   0x47  // SHR rd, rs1, rs2 — shift right
+#define ISA2_IMOD  0x48  // IMOD rd, rs1, rs2 — modulo
+#define ISA2_PRINT 0x49  // PRINT rd — print register value
+#define ISA2_LOAD  0x4A  // LOAD rd, [rs] — load from memory
+#define ISA2_STORE 0x4B  // STORE [rd], rs — store to memory
+#define ISA2_DUP   0x4C  // DUP — duplicate top of stack
+#define ISA2_SWAP  0x4D  // SWAP rs1, rs2 — swap register values
+#define ISA2_NEG   0x4E  // NEG rd, rs — negate
+#define ISA2_XCHG  0x4F  // XCHG — exchange top two stack elements
