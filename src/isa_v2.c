@@ -100,12 +100,12 @@ int32_t isa2_execute(ISA2VM* vm, uint8_t* bc, int32_t len) {
                 break;
                 
             // Extended opcodes (ISA v2.1)
-            case ISA2_CALL: { // [0x40][0x00][addr_lo][addr_hi]
-                int16_t addr = read_s16(b2, b3);
+            case ISA2_CALL: { // [0x40][0x00][off_lo][off_hi] — relative offset like JMP
+                int16_t off = read_s16(b2, b3);
                 if (vm->sp < ISA2_STACK_SIZE) {
                     vm->stack[vm->sp++] = vm->pc + 4; // push return address
                 }
-                next_pc = addr;
+                next_pc = vm->pc + 4 + off; // relative jump like all other branches
                 break;
             }
             

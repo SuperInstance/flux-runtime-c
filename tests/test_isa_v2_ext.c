@@ -12,8 +12,8 @@ void test_call_ret() {
     
     // MOVI R0, 0
     isa2_encode_movi(&code[pc], 0, 0); pc += 4;
-    // CALL to offset 8 (the subroutine)
-    code[pc] = ISA2_CALL; code[pc+1] = 0; code[pc+2] = 8; code[pc+3] = 0; pc += 4;
+    // CALL with offset 4 (jumps to pc+4+4 = 16, which is the subroutine)
+    code[pc] = ISA2_CALL; code[pc+1] = 0; code[pc+2] = 4; code[pc+3] = 0; pc += 4;
     // HALT
     code[pc] = ISA2_HALT; pc += 4;
     // Subroutine: MOVI R0, 42
