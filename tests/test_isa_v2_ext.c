@@ -32,7 +32,8 @@ void test_bitwise_and() {
     isa2_encode_movi(&code[0], 0, 0xFF);    // R0 = 255
     isa2_encode_movi(&code[4], 1, 0x0F);    // R1 = 15
     code[8] = ISA2_AND; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 & R1
-    code[12] = ISA2_HALT;
+    code[12] = ISA2_MOV; code[13] = 0; code[14] = 2; code[15] = 0; // R0 = R2
+    code[16] = ISA2_HALT;
     
     ISA2VM vm;
     int32_t result = isa2_execute(&vm, code, 16);
@@ -45,7 +46,8 @@ void test_bitwise_xor() {
     isa2_encode_movi(&code[0], 0, 0xFF);    // R0 = 255
     isa2_encode_movi(&code[4], 1, 0x0F);    // R1 = 15
     code[8] = ISA2_XOR; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 ^ R1
-    code[12] = ISA2_HALT;
+    code[12] = ISA2_MOV; code[13] = 0; code[14] = 2; code[15] = 0;
+    code[16] = ISA2_HALT;
     
     ISA2VM vm;
     isa2_execute(&vm, code, 16);
@@ -58,7 +60,8 @@ void test_shift_left() {
     isa2_encode_movi(&code[0], 0, 1);       // R0 = 1
     isa2_encode_movi(&code[4], 1, 4);       // R1 = 4
     code[8] = ISA2_SHL; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 << R1
-    code[12] = ISA2_HALT;
+    code[12] = ISA2_MOV; code[13] = 0; code[14] = 2; code[15] = 0;
+    code[16] = ISA2_HALT;
     
     ISA2VM vm;
     isa2_execute(&vm, code, 16);
@@ -71,7 +74,8 @@ void test_modulo() {
     isa2_encode_movi(&code[0], 0, 17);      // R0 = 17
     isa2_encode_movi(&code[4], 1, 5);       // R1 = 5
     code[8] = ISA2_IMOD; code[9] = 2; code[10] = 0; code[11] = 1; // R2 = R0 % R1
-    code[12] = ISA2_HALT;
+    code[12] = ISA2_MOV; code[13] = 0; code[14] = 2; code[15] = 0;
+    code[16] = ISA2_HALT;
     
     ISA2VM vm;
     isa2_execute(&vm, code, 16);
