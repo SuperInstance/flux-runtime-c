@@ -1,8 +1,32 @@
 # flux-runtime-c
 
-**FLUX Runtime** — Fluid Language Universal eXecution. A C11 rewrite of the [SuperInstance/flux-runtime](https://github.com/SuperInstance/flux-runtime) Python Micro-VM.
+FLUX Runtime — a C11 micro-VM (Fluid Language Universal eXecution) providing zero-dependency, portable bytecode execution for agent-based systems. Compiles cleanly on ARM64 (Jetson), x86-64, and any C11 platform. The VM is the execution engine that powers agent instruction processing across the Cocapn fleet.
 
-Zero dependencies. Compiles on ARM64 (Jetson), x86-64, and any C11 platform.
+## Brand Line
+
+> FLUX is the mitochondrion made manifest — bytecode is DNA, opcodes are enzymes, fetch-decode-execute is cellular metabolism. Each agent instinct maps to an opcode group.
+
+## Installation
+
+```bash
+gcc -std=c11 -Wall -O2 -Iinclude -o flux-runtime src/*.c -lm
+# or
+make && make test
+```
+
+## Usage
+
+```bash
+./flux-runtime bytecode.bin
+```
+
+Quick start with test suite:
+
+```bash
+make
+make test    # 27 tests
+./flux-runtime bytecode.bin
+```
 
 ## Architecture
 
@@ -13,24 +37,10 @@ Zero dependencies. Compiles on ARM64 (Jetson), x86-64, and any C11 platform.
 - **Boxed values**: type-tagged dynamic values (int, float, bool)
 - **6 instruction formats**: A (1B), B (2B), C (3B), D (4B + i16), E (4B 3-reg), G (variable)
 
-## Quick Start
-
-```bash
-make
-make test    # 27 tests
-./flux-runtime bytecode.bin
-```
-
-## Building
-
-```bash
-gcc -std=c11 -Wall -O2 -Iinclude -o flux-runtime src/*.c -lm
-```
-
 ## Opcodes
 
 | Range | Category | Examples |
-|-------|----------|---------|
+|-------|----------|----------|
 | 0x00–0x07 | Control | NOP, MOV, LOAD, STORE, JMP, JZ, JNZ, CALL |
 | 0x08–0x0F | Int Arith | IADD, ISUB, IMUL, IDIV, IMOD, INEG, INC, DEC |
 | 0x10–0x17 | Bitwise | IAND, IOR, IXOR, INOT, ISHL, ISHR, ROTL, ROTR |
@@ -45,7 +55,7 @@ gcc -std=c11 -Wall -O2 -Iinclude -o flux-runtime src/*.c -lm
 
 ## Connection to cuda-genepool
 
-The FLUX VM is the **mitochondrion made manifest** — bytecode is DNA, opcodes are enzymes, fetch-decode-execute is cellular metabolism. Each instinct in [cuda-genepool](https://github.com/Lucineer/cuda-genepool) maps to an opcode group:
+Each instinct in [cuda-genepool](https://github.com/Lucineer/cuda-genepool) maps to an opcode group:
 
 - **Survive** → HALT, TRAP, RESOURCE_ACQUIRE
 - **Perceive** → IO_READ, LOAD, CMP, TEST
@@ -54,6 +64,14 @@ The FLUX VM is the **mitochondrion made manifest** — bytecode is DNA, opcodes 
 - **Learn** → BOX, UNBOX, MOV, REGION_CREATE
 - **Defend** → REGION_GUARD, VERIFY, CAP_REQUIRE
 
-## License
+## Fleet Context
 
-MIT — Copyright (c) 2024 SuperInstance (DiGennaro et al.)
+Part of the Cocapn fleet. Related repos:
+
+- [flux-runtime](https://github.com/SuperInstance/flux-runtime) — Python predecessor to this C implementation
+- [cuda-genepool](https://github.com/Lucineer/cuda-genepool) — GPU-native agent evolution where FLUX opcodes map to CUDA instincts
+- [flux](https://github.com/SuperInstance/flux) — The broader FLUX language and toolchain
+- [plato-sdk](https://github.com/SuperInstance/plato-sdk) — SDK for PLATO room-based agent coordination
+
+---
+🦐 Cocapn fleet — lighthouse keeper architecture
